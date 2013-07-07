@@ -8,8 +8,8 @@ import matplotlib.pyplot as plt
 N_POS_SAMPLES = 1
 N_NEG_SAMPLES = 1
 N_TEST_SAMPLES = 1
-AUDIO_LENGTH = 1000
-FFT_LENGTH = 10
+# AUDIO_LENGTH = 10000
+FFT_LENGTH = 5
 
 def GetFeatures(filename):
     audio = wave.open(filename, 'r')
@@ -18,7 +18,7 @@ def GetFeatures(filename):
     audio.close()
     # Make MSB/LSB thing right
     y = numpy.fromstring(signal, numpy.short).byteswap()
-    ffty = numpy.fft.fft(y, n=AUDIO_LENGTH)[:FFT_LENGTH].real
+    ffty = abs(numpy.fft.fft(y)[:FFT_LENGTH])
     ffty = ffty / sum(abs(ffty)) 
     plt.plot(range(FFT_LENGTH), ffty)
     plt.show()
@@ -27,8 +27,12 @@ def GetFeatures(filename):
 if __name__ == '__main__':
     # Data collection phase: get some positive examples and negative examples
     for i in range(N_POS_SAMPLES):
+        print "Press Enter to Accept Input"
+        raw_input()
         os.system('arecord /tmp/pos_%d.wav' % i)
     for i in range(N_NEG_SAMPLES):
+        print "Press Enter to Accept Input"
+        raw_input()
         os.system('arecord /tmp/neg_%d.wav' % i)
     # Feature extraction phase: do FFT
     pos_samples = []
@@ -48,6 +52,8 @@ if __name__ == '__main__':
         p = -float(numpy.dot(w, x) > 0)
         w = w + p * x
     # Testing phase: get some random samples to classify 
+    print "Press Enter to Accept Input"
+    raw_input()
     os.system('arecord /tmp/test.wav')
     x = GetFeatures('/tmp/test.wav')
-    print numpy.dot(w, x) > 0 and "Class 1" or "Class 2"
+    print numpy.dot(w, x), numpy.dot(w, x) > 0 and "Class 1" or "Class 2"
